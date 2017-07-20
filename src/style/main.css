@@ -1,10 +1,48 @@
 body {
-  /*font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;*/
   font-family: "Courier New", Monospace;
   white-space: pre;
   font-size: 20px;
   margin: 0;
-  text-align: center;
   background-color: #2980b9;
   color: #ecf0f1;
+}
+
+/* HOME PAGE  */
+
+#home-page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left:  0;
+  right: 0;
+
+  /* flex */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#home-page .title {
+}
+
+#home-page .menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+#home-page .menu .option {
+  height: 50px;
+}
+
+#home-page .menu .option.selected::before {
+  content: "> ";
+  animation: blink-animation 1s steps(2, start) infinite;
+}
+
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
 }
