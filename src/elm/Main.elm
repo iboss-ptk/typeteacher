@@ -1,21 +1,26 @@
 module Main exposing (..)
 
 import Html exposing (Html, div, img, text)
-import Page.Home as HomePage exposing (view)
+import Page.Home as HomePage exposing (subscriptions, view, Msg(Go))
+import Route exposing (..)
+import Utils exposing (x)
 
 
 ---- MODEL ----
 
 
-type alias Page =
-    { home : HomePage.Model }
+type alias Model =
+    { route : Route
+    , home : HomePage.Model
+    }
 
 
-init : ( Page, Cmd Msg )
+init : ( Model, Cmd Msg )
 init =
-    case HomePage.init of
-        ( model, cmd ) ->
-            ( { home = model }, cmd |> Cmd.map HomeMsg )
+    x
+        { route = HomeRoute
+        , home = HomePage.init
+        }
 
 
 
@@ -26,34 +31,56 @@ type Msg
     = HomeMsg HomePage.Msg
 
 
-update : Msg -> Page -> ( Page, Cmd Msg )
-update msg page =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
+        HomeMsg (HomePage.Go route) ->
+            ( { model | route = route }, Cmd.none )
+
         HomeMsg subMsg ->
-            case HomePage.update subMsg page.home of
+            case HomePage.update subMsg model.home of
                 ( newModel, cmd ) ->
-                    ( { page | home = newModel }, cmd |> Cmd.map HomeMsg )
+                    ( { model | home = newModel }
+                    , cmd |> Cmd.map HomeMsg
+                    )
 
 
 
 ---- VIEW ----
 
 
-view : Page -> Html Msg
-view page =
-    HomePage.view page.home
-        |> Html.map HomeMsg
+view : Model -> Html Msg
+view model =
+    case model.route of
+        HomeRoute ->
+            HomePage.view model.home
+                |> Html.map HomeMsg
+
+        NormalModeRoute ->
+            div [] [ text "normal mode" ]
+
+        CorrectingModeRoute ->
+            div [] [ text "correcting mode" ]
+
+
+
+---- SUBSCRIPTIONS ----
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    HomePage.subscriptions model.home |> Sub.map HomeMsg
 
 
 
 ---- PROGRAM ----
 
 
-main : Program Never Page Msg
+main : Program Never Model Msg
 main =
     Html.program
         { view = view
         , init = init
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
