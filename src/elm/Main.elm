@@ -35,7 +35,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         HomeMsg (HomePage.Go route) ->
-            ( { model | route = route }, Cmd.none )
+            x { model | route = route }
 
         HomeMsg subMsg ->
             case HomePage.update subMsg model.home of

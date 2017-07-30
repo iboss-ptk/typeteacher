@@ -1,10 +1,12 @@
 module Page.Home exposing (view, init, update, subscriptions, Model, Msg(Go))
 
+import Char exposing (fromCode, toCode)
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Keyboard
 import Route exposing (..)
+import Utils exposing (x)
 
 
 ---- MODEL ----
@@ -27,6 +29,7 @@ init =
 type Msg
     = Select Mode
     | Go Route
+    | NoOp
 
 
 
@@ -37,13 +40,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Select Normal ->
-            ( Normal, Cmd.none )
+            x Normal
 
         Select Correcting ->
-            ( Correcting, Cmd.none )
+            x Correcting
 
         Go route ->
-            ( model, Cmd.none )
+            x model
+
+        NoOp ->
+            x model
 
 
 
@@ -113,6 +119,12 @@ subscriptions model =
         enterCode =
             13
 
+        upKeyCodes =
+            [ toCode 'w', toCode 'k' ]
+
+        downKeyCodes =
+            [ toCode 's', toCode 'j' ]
+
         routeMap mode =
             case mode of
                 Normal ->
@@ -123,7 +135,12 @@ subscriptions model =
     in
         Keyboard.presses
             (\code ->
-                case code of
-                    enterCode ->
-                        Go <| routeMap model
+                if (code == enterCode) then
+                    Go <| routeMap model
+                else if (upKeyCodes |> List.member code) then
+                    Select Normal
+                else if (downKeyCodes |> List.member code) then
+                    Select Correcting
+                else
+                    NoOp
             )
