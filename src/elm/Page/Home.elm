@@ -1,12 +1,11 @@
-module Page.Home exposing (view, init, update, subscriptions, Model, Msg(Go))
+module Page.Home exposing (view, init, update, subscriptions, Model, Msg)
 
 import Char exposing (fromCode, toCode)
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Keyboard
-import Route exposing (..)
-import Utils exposing (x)
+import Route exposing (Route)
 
 
 ---- MODEL ----
@@ -28,7 +27,7 @@ init =
 
 type Msg
     = Select Mode
-    | Go Route
+    | Go
     | NoOp
 
 
@@ -36,20 +35,27 @@ type Msg
 ---- UPDATE ----
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        Select Normal ->
-            x Normal
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe Route )
+update msg mode =
+    let
+        goTo route =
+            ( mode, Cmd.none, Just route )
 
-        Select Correcting ->
-            x Correcting
+        select mode =
+            ( mode, Cmd.none, Nothing )
+    in
+        case msg of
+            Select Normal ->
+                select Normal
 
-        Go route ->
-            x model
+            Select Correcting ->
+                select Correcting
 
-        NoOp ->
-            x model
+            Go ->
+                goTo <| routeOf mode
+
+            NoOp ->
+                ( mode, Cmd.none, Nothing )
 
 
 
@@ -124,19 +130,11 @@ subscriptions model =
 
         downKeyCodes =
             [ toCode 's', toCode 'j' ]
-
-        routeMap mode =
-            case mode of
-                Normal ->
-                    NormalModeRoute
-
-                Correcting ->
-                    CorrectingModeRoute
     in
         Keyboard.presses
             (\code ->
                 if (code == enterCode) then
-                    Go <| routeMap model
+                    Go
                 else if (upKeyCodes |> List.member code) then
                     Select Normal
                 else if (downKeyCodes |> List.member code) then
@@ -144,3 +142,17 @@ subscriptions model =
                 else
                     NoOp
             )
+
+
+
+---- Utils ----
+
+
+routeOf : Model -> Route
+routeOf model =
+    case model of
+        Normal ->
+            Route.NormalMode
+
+        Correcting ->
+            Route.CorrectingMode

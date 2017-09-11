@@ -1,8 +1,8 @@
 module Main exposing (..)
 
 import Html exposing (Html, div, img, text)
-import Page.Home as HomePage exposing (subscriptions, view, Msg(Go))
-import Route exposing (..)
+import Page.Home as HomePage exposing (subscriptions, view, Msg)
+import Route exposing (Route)
 import Utils exposing (x)
 
 
@@ -18,7 +18,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     x
-        { route = HomeRoute
+        { route = Route.Home
         , home = HomePage.init
         }
 
@@ -34,13 +34,13 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        HomeMsg (HomePage.Go route) ->
-            x { model | route = route }
-
         HomeMsg subMsg ->
             case HomePage.update subMsg model.home of
-                ( newModel, cmd ) ->
-                    ( { model | home = newModel }
+                ( newModel, cmd, route ) ->
+                    ( { model
+                        | home = newModel
+                        , route = Maybe.withDefault model.route route
+                      }
                     , cmd |> Cmd.map HomeMsg
                     )
 
@@ -52,14 +52,14 @@ update msg model =
 view : Model -> Html Msg
 view model =
     case model.route of
-        HomeRoute ->
+        Route.Home ->
             HomePage.view model.home
                 |> Html.map HomeMsg
 
-        NormalModeRoute ->
+        Route.NormalMode ->
             div [] [ text "normal mode" ]
 
-        CorrectingModeRoute ->
+        Route.CorrectingMode ->
             div [] [ text "correcting mode" ]
 
 
